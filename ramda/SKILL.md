@@ -13,6 +13,8 @@ description: >
 
 # Ramda Skill
 
+Version note: examples and function names in this skill target Ramda `0.31.3`.
+
 ## Design philosophy
 
 Ramda is built around a few core ideas. Understanding these is more important than memorizing functions.
@@ -34,14 +36,13 @@ When a user describes what they want to do, use this reference to find the right
 | Task | Function | Example |
 |---|---|---|
 | Transform every element | `map(fn, list)` | `R.map(R.inc, [1,2,3])` → `[2,3,4]` |
-| Keep matching elements | `filter(pred, list)` | `R.filter(R.gt(2), [1,2,3])` → `[3]` |
-| Remove matching elements | `reject(pred, list)` | `R.reject(R.gt(2), [1,2,3])` → `[1,2]` |
+| Keep matching elements | `filter(pred, list)` | `R.filter(R.lt(2), [1,2,3])` → `[3]` |
+| Remove matching elements | `reject(pred, list)` | `R.reject(R.lt(2), [1,2,3])` → `[1,2]` |
 | Transform and flatten | `chain(fn, list)` | `R.chain(x => [x, x*2], [1,2])` → `[1,2,2,4]` |
 | Reduce to a value | `reduce(fn, init, list)` | `R.reduce(R.add, 0, [1,2,3])` → `6` |
 | Reduce while condition holds | `reduceWhile(pred, fn, init, list)` | stops early when pred fails |
 | Transform object values | `map(fn, obj)` | `R.map(R.inc, {a:1, b:2})` → `{a:2, b:3}` |
 | Map over object keys+values | `mapObjIndexed(fn, obj)` | fn receives `(val, key, obj)` |
-| Transform object keys | `mapKeys(fn, obj)` | `R.mapKeys(R.toUpper, {a:1})` → `{A:1}` |
 | Apply functions to elements at indices | `adjust(fn, idx, list)` | `R.adjust(R.inc, 1, [1,2,3])` → `[1,3,3]` |
 | Replace element at index | `update(idx, val, list)` | `R.update(1, 99, [1,2,3])` → `[1,99,3]` |
 
@@ -51,7 +52,6 @@ When a user describes what they want to do, use this reference to find the right
 |---|---|---|
 | Right-to-left composition | `compose(f, g, h)` | `compose(f,g,h)(x)` = `f(g(h(x)))` |
 | Left-to-right pipeline | `pipe(f, g, h)` | `pipe(f,g,h)(x)` = `h(g(f(x)))` — often more readable |
-| Left-to-right (alias) | `flow(f, g, h)` | Same as `pipe`, preferred in some codebases |
 | Two-function compose | `o(f, g)` | `o(f,g)` = `compose(f,g)` — shorter for simple cases |
 | Compose with transformer chaining | `composeWith(chainFn, fns)` | Custom chain between composed functions |
 | Pipe with transformer chaining | `pipeWith(chainFn, fns)` | Custom chain between piped functions |
@@ -95,7 +95,6 @@ When a user describes what they want to do, use this reference to find the right
 | Remove property | `dissoc('key', obj)` | returns new object without key |
 | Remove nested path | `dissocPath(['a','b'], obj)` | |
 | Apply fn to property | `modify('key', fn, obj)` | `modify('x', R.inc, {x:1})` → `{x:2}` |
-| Apply fn to nested path | `modifyPath(['a','b'], fn, obj)` | |
 | Merge right (shallow) | `mergeRight(obj1, obj2)` | obj2 keys win; same as `mergeLeft` but flipped args |
 | Merge left (shallow) | `mergeLeft(obj1, obj2)` | obj1 keys win |
 | Merge deep right | `mergeDeepRight(obj1, obj2)` | recursively merges, obj2 wins at leaves |
@@ -107,7 +106,6 @@ When a user describes what they want to do, use this reference to find the right
 | Pick keys | `pick(['a','b'], obj)` | returns `{a: ..., b: ...}` |
 | Pick by predicate | `pickBy(pred, obj)` | `pickBy((val, key) => key === 'a', {a:1,b:2})` |
 | Omit keys | `omit(['a','b'], obj)` | returns everything except listed keys |
-| Rename keys | `renameKeys({old: 'new'}, obj)` | |
 | Create object from key+value | `objOf('key', val)` | `{key: val}` |
 | Invert keys and values | `invert(obj)` | `{a:'x', b:'y'}` → `{x:'a', y:'b'}` |
 | Test object shape | `where({x: R.is(Number)})` | | returns boolean if all spec fns return truthy |
@@ -278,9 +276,7 @@ When a user describes what they want to do, use this reference to find the right
 | Type name | `type(val)` | returns `'Array'`, `'Object'`, `'String'`, etc. |
 | Is type | `is(Type, val)` | `R.is(Array, [])` → `true` |
 | Is nil | `isNil(val)` | null or undefined |
-| Is not nil | `isNotNil(val)` | |
 | Is empty | `isEmpty(val)` | works on arrays, objects, strings |
-| Is not empty | `isNotEmpty(val)` | |
 | Invoke method | `invoker(arity, method)` | `invoker(0, 'toLowerCase')` |
 
 ### Function utilities
@@ -325,7 +321,7 @@ When a user describes what they want to do, use this reference to find the right
 
 ```js
 const processUsers = R.pipe(
-  R.filter(R.propSatisfies(R.lte(18), 'age')),     // keep adults (18 <= age)
+  R.filter(R.propSatisfies(R.lte(18), 'age')),     // keep adults (age >= 18)
   R.map(R.pick(['id', 'name', 'email'])),           // select fields
   R.sortBy(R.prop('name'))                           // sort alphabetically
 );
@@ -388,7 +384,7 @@ byAgeDesc(people);
 
 ```js
 // Defaults (left) get overridden by user config (right)
-const withDefaults = R.mergeDeepLeft(defaultConfig);
+const withDefaults = R.mergeDeepRight(defaultConfig);
 const finalConfig = withDefaults(userConfig);
 ```
 
