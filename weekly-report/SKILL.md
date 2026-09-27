@@ -61,15 +61,18 @@ description: >
 
 - 确认用户要生成的是"本周"还是"上周"的周报
 - 计算对应周的周一（起始）和周日（结束）日期
-- 日期格式用于 git log 的 `--since` 和 `--until` 参数：`YYYY-MM-DD`
-- 注意 `--until` 是 exclusive，需要设置为周日+1天
+- 日期格式用于 git log 的 `--since` 和 `--until` 参数：`YYYY-MM-DD HH:MM:SS`，**时分秒必须写全**
+  （只写 `--since="2026-09-21"` 时 git 会拿当前时刻补时分秒，晚上跑就等于 `2026-09-21 21:19`，
+  周一白天提交的活会被静默丢掉）
+- 注意 `--until` 是 exclusive，需要设置为周日+1天，**同样要带时分秒**
+  （只写 `--until="2026-09-28"` 会被补成"09-28 的当前时刻"，把下周一白天的提交也算进来）
 
 ### 步骤 2：自动发现仓库
 
 扫描"配置"一节列出的目录，找出本周有提交的仓库：
 
 1. 递归查找目录下的 `.git`（深度 2-3 层，跳过 node_modules 等依赖目录）
-2. 对每个仓库执行 `git log --since="<周一>" --until="<周日+1天>" --oneline --no-merges` 统计本周提交数
+2. 对每个仓库执行 `git log --since="<周一> 00:00:00" --until="<周日+1天> 00:00:00" --oneline --no-merges` 统计本周提交数
 3. 只保留本周有提交的仓库，列出给用户确认，并询问是否还有其他仓库或目录
 
 注意：周报中的项目名称直接使用仓库名；monorepo 仓库使用子应用（app）名。
@@ -85,7 +88,7 @@ description: >
 对每个仓库，用确认过的身份过滤本周提交：
 
 ```bash
-git -C <repo-path> log --author="<git-user-name>" --since="<monday>" --until="<sunday+1day>" --format="%s" --no-merges
+git -C <repo-path> log --author="<git-user-name>" --since="<monday> 00:00:00" --until="<sunday+1day> 00:00:00" --format="%s" --no-merges
 ```
 
 **容错处理：**
@@ -213,3 +216,6 @@ feat: 参数配置删除增加二次确认弹窗   ← 无 scope，git show 显�
 - **先自动后手动**：优先用 git log 自动生成，再让用户补充非 git 工作和下周计划
 - **提交信息是线索，不是定稿**：git commit message 需要翻译成业务可读的工作描述，不要原文照搬
 - **monorepo 是常态**：遇到 apps/ + packages/ 结构的仓库，先按 scope/路径拆分再提取工作项
+- **项目维度找 project-report**：用户给了一个项目路径、要的是"这个项目整体进展"时，
+  那是 `project-report` skill（不加 `--author`、只统计给定路径下的仓库、三段式且不写是谁做的），
+  不要用本 skill 硬凑
