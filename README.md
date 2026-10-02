@@ -1,6 +1,8 @@
 # geodaoyu-skills
 
-Personal collection of Claude Code skills.
+Personal collection of agent skills — plain `SKILL.md` bundles, not tied to any single agent.
+
+Each skill is just a directory with a `SKILL.md` (YAML frontmatter: `name` + `description`, then the instructions). Any agent that understands the Agent Skills convention can load them, including **Claude Code** and **DeepSeek (DSH)**.
 
 ## Skills
 
@@ -30,10 +32,14 @@ Trigger: 项目报告、项目周报、项目进展、项目汇报、项目这�
 
 ## Installation
 
-Copy the desired skill directory into your Claude Code skills folder:
+Copy the skill directory into your agent's skills folder. For example, with Claude Code or DeepSeek (DSH):
 
 ```bash
+# Claude Code
 cp -r ramda ~/.claude/skills/
+
+# DeepSeek (DSH)
+cp -r ramda ~/.dsh/skills/
 ```
 
-Or install via the Skills interface in Claude Code.
+Or just point your agent at this repo — skills can also be discovered from a project or custom skill root, so you can drop a skill directory (or symlink it) wherever your setup scans. No code, no build step, no dependencies.
